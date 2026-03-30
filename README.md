@@ -122,6 +122,18 @@ az keyvault secret show --vault-name $KV_NAME --name api-key --query value -o ts
 
 ---
 
+## UI
+
+A web interface is available at the root URL:
+
+```
+https://<app-service-hostname>/
+```
+
+It supports shortening URLs, looking up short codes, and copying results — no curl required.
+
+---
+
 ## Testing
 
 ```bash
