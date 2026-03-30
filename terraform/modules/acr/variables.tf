@@ -10,9 +10,3 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
-
-variable "app_service_principal_id" {
-  description = "Principal ID of the App Service managed identity — granted AcrPull"
-  type        = string
-  default     = ""
-}

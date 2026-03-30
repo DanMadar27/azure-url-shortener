@@ -17,7 +17,7 @@ terraform {
     storage_account_name = "terraformbackend2fntr3e" # must be globally unique — change if taken
     container_name       = "tfstate"
     key                  = "url-shortener.tfstate"
-    use_oidc             = true  # uses az login / service principal — no storage key stored
+    use_oidc             = true # uses az login / service principal — no storage key stored
   }
 }
 

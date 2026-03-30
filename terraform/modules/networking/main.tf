@@ -11,6 +11,7 @@ resource "azurerm_subnet" "app" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.1.0/24"]
+  service_endpoints    = ["Microsoft.KeyVault"]
 
   delegation {
     name = "app-service-delegation"
@@ -120,24 +121,3 @@ resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
   tags                  = var.tags
 }
 
-# Private endpoint for Redis — only created once redis_resource_id is known
-resource "azurerm_private_endpoint" "redis" {
-  count               = var.redis_resource_id != "" ? 1 : 0
-  name                = "pe-redis"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = azurerm_subnet.redis.id
-  tags                = var.tags
-
-  private_service_connection {
-    name                           = "redis-private-connection"
-    private_connection_resource_id = var.redis_resource_id
-    subresource_names              = ["redisCache"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "redis-dns-zone-group"
-    private_dns_zone_ids = [azurerm_private_dns_zone.redis.id]
-  }
-}

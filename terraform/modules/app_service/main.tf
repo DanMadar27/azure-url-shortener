@@ -26,7 +26,7 @@ resource "azurerm_linux_web_app" "main" {
     minimum_tls_version               = "1.2"
 
     application_stack {
-      docker_image_name   = "${var.acr_login_server}/url-shortener:latest"
+      docker_image_name   = "url-shortener:latest"
       docker_registry_url = "https://${var.acr_login_server}"
     }
 
@@ -48,19 +48,32 @@ resource "azurerm_linux_web_app" "main" {
       name       = "allow-azure-health-check"
     }
 
-    ip_restriction_default_action = "Deny"
+    ip_restriction_default_action            = "Deny"
+    vnet_route_all_enabled                   = true
+    container_registry_use_managed_identity  = true
   }
 
   app_settings = {
-    REDIS_HOST                             = var.redis_hostname
-    KEY_VAULT_URL                          = var.key_vault_url
-    WEBSITES_PORT                          = "8000"
-    WEBSITE_VNET_ROUTE_ALL                 = "1"
-    APPLICATIONINSIGHTS_CONNECTION_STRING  = var.app_insights_connection_string
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE    = "false"
+    REDIS_HOST                            = var.redis_hostname
+    KEY_VAULT_URL                         = var.key_vault_url
+    WEBSITES_PORT                         = "8000"
+    APPLICATIONINSIGHTS_CONNECTION_STRING = var.app_insights_connection_string
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE   = "false"
   }
 
   virtual_network_subnet_id = var.app_subnet_id
+
+  logs {
+    http_logs {
+      file_system {
+        retention_in_days = 7
+        retention_in_mb   = 35
+      }
+    }
+    application_logs {
+      file_system_level = "Information"
+    }
+  }
 }
 
 resource "random_string" "suffix" {
@@ -75,6 +88,7 @@ resource "azurerm_monitor_autoscale_setting" "main" {
   resource_group_name = var.resource_group_name
   location            = var.location
   target_resource_id  = azurerm_service_plan.main.id
+  enabled             = true
   tags                = var.tags
 
   profile {

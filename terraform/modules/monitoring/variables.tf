@@ -16,14 +16,3 @@ variable "alert_email" {
   type        = string
 }
 
-variable "app_service_id" {
-  description = "Resource ID of the App Service — used for diagnostic settings and alert rules"
-  type        = string
-  default     = ""
-}
-
-variable "redis_id" {
-  description = "Resource ID of the Redis instance — used for diagnostic settings"
-  type        = string
-  default     = ""
-}

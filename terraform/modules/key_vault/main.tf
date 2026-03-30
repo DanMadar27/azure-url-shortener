@@ -15,6 +15,7 @@ resource "azurerm_key_vault" "main" {
     default_action             = "Deny"
     bypass                     = "AzureServices"
     ip_rules                   = var.allowed_ip_cidrs
+    virtual_network_subnet_ids = [var.app_subnet_id]
   }
 }
 
@@ -34,26 +35,9 @@ resource "azurerm_key_vault_secret" "api_key" {
   depends_on = [azurerm_role_assignment.owner_officer]
 }
 
-resource "azurerm_key_vault_secret" "redis_host" {
-  count        = var.redis_hostname != "" ? 1 : 0
-  name         = "redis-host"
-  value        = var.redis_hostname
-  key_vault_id = azurerm_key_vault.main.id
-
-  depends_on = [azurerm_role_assignment.owner_officer]
-}
-
 # Grant the deploying user Secrets Officer so they can create/read secrets
 resource "azurerm_role_assignment" "owner_officer" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = var.owner_object_id
-}
-
-# Grant App Service managed identity read access to secrets
-resource "azurerm_role_assignment" "app_secrets_user" {
-  count                = var.app_service_principal_id != "" ? 1 : 0
-  scope                = azurerm_key_vault.main.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.app_service_principal_id
 }

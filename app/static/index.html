@@ -107,7 +107,9 @@
       ...options,
     });
     if (!res.ok) {
-      throw Object.assign(new Error(), { status: res.status });
+      const body = await res.json().catch(() => ({}));
+      const detail = body.detail ? JSON.stringify(body.detail) : null;
+      throw Object.assign(new Error(), { status: res.status, detail });
     }
     return res.json();
   }
@@ -126,13 +128,13 @@
       resultContent.innerHTML = `
         <strong>Short URL:</strong>
         <a href="${data.short_url}" target="_blank">${data.short_url}</a>
-        <button class="copy-btn" onclick="copyText('${data.short_url}')">Copy</button>
+        <button class="copy-btn" data-copy="${data.short_url.replace(/"/g, '&quot;')}">Copy</button>
       `;
       resultBox.classList.remove('hidden');
 
       loadStats(data.short_code);
     } catch (err) {
-      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+      showError(err.detail || ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
     }
   }
 
@@ -146,14 +148,14 @@
       resultContent.innerHTML = `
         <strong>Original URL:</strong>
         <a href="${data.original_url}" target="_blank">${data.original_url}</a>
-        <button class="copy-btn" onclick="copyText('${data.original_url}')">Copy</button>
+        <button class="copy-btn" data-copy="${data.original_url.replace(/"/g, '&quot;')}">Copy</button>
         &nbsp;
         <a href="${data.original_url}" target="_blank" role="button" style="padding:.2rem .7rem;font-size:.85rem">Open</a>
       `;
       resultBox.classList.remove('hidden');
       loadStats(code);
     } catch (err) {
-      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+      showError(err.detail || ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
     }
   }
 
@@ -166,9 +168,11 @@
     }
   }
 
-  function copyText(text) {
-    navigator.clipboard.writeText(text).catch(() => {});
-  }
+  document.addEventListener('click', e => {
+    if (e.target.matches('.copy-btn[data-copy]')) {
+      navigator.clipboard.writeText(e.target.dataset.copy).catch(() => {});
+    }
+  });
 </script>
 </body>
 </html>
