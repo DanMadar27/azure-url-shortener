@@ -1,5 +1,6 @@
 import logging
 import math
+import sys
 import time
 
 from fastapi import FastAPI, Request
@@ -9,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from routers import redirect, shorten
 from services import auth_service, redis_service
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s", stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="URL Shortener")
