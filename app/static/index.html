@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL Shortener</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <style>
+    main { max-width: 640px; margin: 0 auto; padding: 2rem 1rem; }
+    .mode-toggle { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    .mode-toggle label { display: flex; align-items: center; gap: .4rem; cursor: pointer; }
+    #result-box { margin-top: 1.5rem; padding: 1rem; border-radius: .5rem; background: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); }
+    #result-box.hidden { display: none; }
+    .copy-btn { margin-left: .5rem; padding: .2rem .6rem; font-size: .85rem; }
+    #error-msg { color: var(--pico-del-color); margin-top: .5rem; }
+    #stats-box { margin-top: 1rem; font-size: .9rem; color: var(--pico-muted-color); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>URL Shortener</h1>
+
+  <label for="api-key">API Key</label>
+  <input id="api-key" type="password" placeholder="Paste your API key here" autocomplete="off" />
+
+  <div class="mode-toggle">
+    <label><input type="radio" name="mode" value="shorten" checked /> Shorten</label>
+    <label><input type="radio" name="mode" value="redirect" /> Redirect</label>
+  </div>
+
+  <!-- Shorten panel -->
+  <div id="panel-shorten">
+    <label for="long-url">Long URL</label>
+    <input id="long-url" type="url" placeholder="https://example.com/very/long/path" />
+
+    <label for="custom-code">Custom code <small>(optional, 3–20 alphanumeric)</small></label>
+    <input id="custom-code" type="text" placeholder="my-code" maxlength="20" />
+
+    <button id="btn-shorten">Shorten</button>
+  </div>
+
+  <!-- Redirect panel -->
+  <div id="panel-redirect" style="display:none">
+    <label for="short-code-input">Short code</label>
+    <input id="short-code-input" type="text" placeholder="abc123" />
+
+    <button id="btn-redirect">Look up</button>
+  </div>
+
+  <p id="error-msg"></p>
+
+  <div id="result-box" class="hidden">
+    <div id="result-content"></div>
+    <div id="stats-box"></div>
+  </div>
+</main>
+
+<script>
+  const apiKeyInput  = document.getElementById('api-key');
+  const errorMsg     = document.getElementById('error-msg');
+  const resultBox    = document.getElementById('result-box');
+  const resultContent = document.getElementById('result-content');
+  const statsBox     = document.getElementById('stats-box');
+
+  const panels = {
+    shorten:  document.getElementById('panel-shorten'),
+    redirect: document.getElementById('panel-redirect'),
+  };
+
+  document.querySelectorAll('input[name="mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      Object.entries(panels).forEach(([k, el]) => {
+        el.style.display = k === radio.value ? '' : 'none';
+      });
+      clearUI();
+    });
+  });
+
+  document.getElementById('btn-shorten').addEventListener('click', handleShorten);
+  document.getElementById('btn-redirect').addEventListener('click', handleRedirect);
+
+  function apiKey() { return apiKeyInput.value.trim(); }
+
+  function clearUI() {
+    errorMsg.textContent = '';
+    resultBox.classList.add('hidden');
+    resultContent.innerHTML = '';
+    statsBox.textContent = '';
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    resultBox.classList.add('hidden');
+  }
+
+  const ERROR_MESSAGES = {
+    401: 'Invalid API key',
+    404: 'Short code not found',
+    409: 'Custom code already taken',
+    429: 'Rate limit exceeded — please wait 60 seconds',
+    500: 'Server error — please try again',
+  };
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(path, {
+      headers: { 'X-API-Key': apiKey(), 'Content-Type': 'application/json', ...(options.headers || {}) },
+      ...options,
+    });
+    if (!res.ok) {
+      throw Object.assign(new Error(), { status: res.status });
+    }
+    return res.json();
+  }
+
+  async function handleShorten() {
+    clearUI();
+    const url = document.getElementById('long-url').value.trim();
+    const code = document.getElementById('custom-code').value.trim();
+    if (!url) { showError('Please enter a URL'); return; }
+
+    try {
+      const body = { url };
+      if (code) body.custom_code = code;
+      const data = await apiFetch('/api/shorten', { method: 'POST', body: JSON.stringify(body) });
+
+      resultContent.innerHTML = `
+        <strong>Short URL:</strong>
+        <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+        <button class="copy-btn" onclick="copyText('${data.short_url}')">Copy</button>
+      `;
+      resultBox.classList.remove('hidden');
+
+      loadStats(data.short_code);
+    } catch (err) {
+      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+    }
+  }
+
+  async function handleRedirect() {
+    clearUI();
+    const code = document.getElementById('short-code-input').value.trim();
+    if (!code) { showError('Please enter a short code'); return; }
+
+    try {
+      const data = await apiFetch(`/api/redirect/${code}`);
+      resultContent.innerHTML = `
+        <strong>Original URL:</strong>
+        <a href="${data.original_url}" target="_blank">${data.original_url}</a>
+        <button class="copy-btn" onclick="copyText('${data.original_url}')">Copy</button>
+        &nbsp;
+        <a href="${data.original_url}" target="_blank" role="button" style="padding:.2rem .7rem;font-size:.85rem">Open</a>
+      `;
+      resultBox.classList.remove('hidden');
+      loadStats(code);
+    } catch (err) {
+      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+    }
+  }
+
+  async function loadStats(code) {
+    try {
+      const s = await apiFetch(`/api/stats/${code}`);
+      statsBox.textContent = `Created: ${new Date(s.created_at).toLocaleString()} · Clicks: ${s.click_count}`;
+    } catch {
+      // stats are informational — silently ignore failures
+    }
+  }
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+</script>
+</body>
+</html>
