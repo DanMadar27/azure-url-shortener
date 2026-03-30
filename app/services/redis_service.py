@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import json
 import logging
 import os
 
@@ -17,8 +19,14 @@ TOKEN_REFRESH_INTERVAL_SECONDS = 20 * 3600  # refresh every 20 hours
 
 
 def _get_token() -> str:
-    token = _credential.get_token(REDIS_SCOPE)
-    return token.token
+    return _credential.get_token(REDIS_SCOPE).token
+
+
+def _extract_oid(token: str) -> str:
+    # Decode the JWT payload (no signature verification needed — Azure issued it)
+    payload = token.split(".")[1]
+    payload += "=" * (-len(payload) % 4)  # fix padding
+    return json.loads(base64.b64decode(payload))["oid"]
 
 
 def _build_client(token: str) -> aioredis.Redis:
@@ -26,7 +34,7 @@ def _build_client(token: str) -> aioredis.Redis:
         host=REDIS_HOST,
         port=REDIS_PORT,
         ssl=True,
-        username=os.environ.get("AZURE_CLIENT_ID", ""),
+        username=_extract_oid(token),
         password=token,
         decode_responses=True,
     )
