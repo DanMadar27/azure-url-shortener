@@ -12,14 +12,13 @@ terraform {
     }
   }
 
-  # NOTE: For production, replace this local backend with an Azure Storage backend:
-  # backend "azurerm" {
-  #   resource_group_name  = "rg-terraform-state"
-  #   storage_account_name = "sttfstate<suffix>"
-  #   container_name       = "tfstate"
-  #   key                  = "url-shortener.tfstate"
-  #   use_oidc             = true   # enables state locking via lease
-  # }
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "sttfstateurlshort"  # must be globally unique — change if taken
+    container_name       = "tfstate"
+    key                  = "url-shortener.tfstate"
+    use_oidc             = true  # uses az login / service principal — no storage key stored
+  }
 }
 
 provider "azurerm" {
