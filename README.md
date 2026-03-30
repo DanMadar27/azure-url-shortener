@@ -10,19 +10,7 @@ The deployment is fully observable: Application Insights captures distributed tr
 
 ## Architecture
 
-```
-User → [HTTPS + X-API-Key] → App Service (FastAPI Docker)
-                                  ↓ Managed Identity
-                              Key Vault (api-key secret)
-                                  ↓ Entra ID token, TLS 6380
-                              Redis (private endpoint, no public access)
-                                  ↓ Pull image
-                              Azure Container Registry
-                                  ↓ Logs + metrics
-                              Application Insights → Log Analytics
-```
-
-See [docs/architecture.md](docs/architecture.md) for the full Mermaid diagram and detailed data flow.
+See [docs/architecture.md](docs/architecture.md) for the full diagram and detailed data flow.
 
 ---
 
