@@ -8,13 +8,13 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.5"
+      version = "~> 3.8"
     }
   }
 
   backend "azurerm" {
     resource_group_name  = "rg-terraform-state"
-    storage_account_name = "sttfstateurlshort"  # must be globally unique — change if taken
+    storage_account_name = "terraformbackend2fntr3e" # must be globally unique — change if taken
     container_name       = "tfstate"
     key                  = "url-shortener.tfstate"
     use_oidc             = true  # uses az login / service principal — no storage key stored
