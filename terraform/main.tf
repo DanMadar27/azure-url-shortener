@@ -28,6 +28,7 @@ module "key_vault" {
   tags                = local.common_tags
   owner_object_id     = var.owner_object_id
   allowed_ip_cidrs    = var.allowed_ip_cidrs
+  app_subnet_id       = module.networking.app_subnet_id
 }
 
 # ── Redis ────────────────────────────────────────────────────────────────────

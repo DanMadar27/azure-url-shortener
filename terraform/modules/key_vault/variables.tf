@@ -21,3 +21,8 @@ variable "allowed_ip_cidrs" {
   type        = list(string)
 }
 
+variable "app_subnet_id" {
+  description = "Subnet ID of the App Service VNet integration subnet — allowed through Key Vault firewall"
+  type        = string
+}
+
