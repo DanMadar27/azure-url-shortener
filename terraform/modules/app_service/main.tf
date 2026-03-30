@@ -62,6 +62,18 @@ resource "azurerm_linux_web_app" "main" {
   }
 
   virtual_network_subnet_id = var.app_subnet_id
+
+  logs {
+    http_logs {
+      file_system {
+        retention_in_days = 7
+        retention_in_mb   = 35
+      }
+    }
+    application_logs {
+      file_system_level = "Information"
+    }
+  }
 }
 
 resource "random_string" "suffix" {
@@ -76,6 +88,7 @@ resource "azurerm_monitor_autoscale_setting" "main" {
   resource_group_name = var.resource_group_name
   location            = var.location
   target_resource_id  = azurerm_service_plan.main.id
+  enabled             = true
   tags                = var.tags
 
   profile {
