@@ -26,7 +26,7 @@ resource "azurerm_linux_web_app" "main" {
     minimum_tls_version               = "1.2"
 
     application_stack {
-      docker_image_name   = "${var.acr_login_server}/url-shortener:latest"
+      docker_image_name   = "url-shortener:latest"
       docker_registry_url = "https://${var.acr_login_server}"
     }
 
@@ -48,8 +48,9 @@ resource "azurerm_linux_web_app" "main" {
       name       = "allow-azure-health-check"
     }
 
-    ip_restriction_default_action = "Deny"
-    vnet_route_all_enabled        = true
+    ip_restriction_default_action            = "Deny"
+    vnet_route_all_enabled                   = true
+    container_registry_use_managed_identity  = true
   }
 
   app_settings = {
