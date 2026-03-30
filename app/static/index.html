@@ -107,7 +107,9 @@
       ...options,
     });
     if (!res.ok) {
-      throw Object.assign(new Error(), { status: res.status });
+      const body = await res.json().catch(() => ({}));
+      const detail = body.detail ? JSON.stringify(body.detail) : null;
+      throw Object.assign(new Error(), { status: res.status, detail });
     }
     return res.json();
   }
@@ -132,7 +134,7 @@
 
       loadStats(data.short_code);
     } catch (err) {
-      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+      showError(err.detail || ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
     }
   }
 
@@ -153,7 +155,7 @@
       resultBox.classList.remove('hidden');
       loadStats(code);
     } catch (err) {
-      showError(ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
+      showError(err.detail || ERROR_MESSAGES[err.status] || ERROR_MESSAGES[500]);
     }
   }
 
