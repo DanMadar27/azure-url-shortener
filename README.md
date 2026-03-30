@@ -1,5 +1,13 @@
 # Azure URL Shortener
 
+A production-grade URL shortener demonstrating Azure DevOps and platform engineering best practices. The application runs as a FastAPI Docker container on Azure App Service, stores URLs in Azure Cache for Redis, and retrieves secrets from Azure Key Vault — all authenticated via managed identity with no static credentials anywhere in the stack.
+
+All sensitive data paths are protected: Redis has no public endpoint and is reachable only via a private endpoint inside the VNet. The API key is a randomly generated UUID stored exclusively in Key Vault. App Service inbound access is restricted to a configurable IP allowlist. All communication uses TLS 1.2 minimum.
+
+The deployment is fully observable: Application Insights captures distributed traces and dependency calls (Key Vault, Redis, Entra ID), Log Analytics retains HTTP logs and application logs for 30 days, and metric alerts fire on HTTP 5xx spikes and health check degradation. Auto-scaling is configured to add instances when CPU exceeds 70% and remove them when it drops below 30%.
+
+---
+
 ## Architecture
 
 ```
@@ -207,3 +215,13 @@ AppServiceHTTPLogs
 | order by TimeGenerated desc
 ```
 
+---
+
+## Documentation
+
+| Document | Contents |
+|----------|----------|
+| [docs/architecture.md](docs/architecture.md) | Mermaid diagram, component overview, data flow, auth flows, network isolation |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Step-by-step guides for HTTP 500s and Redis connectivity issues |
+| [docs/security.md](docs/security.md) | Secrets management, network controls, known risks, production hardening checklist |
+| [docs/decisions.md](docs/decisions.md) | Design rationale and alternatives considered |
