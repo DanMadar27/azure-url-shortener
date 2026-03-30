@@ -17,7 +17,7 @@ graph TD
 
 | Component | SKU | Purpose |
 |-----------|-----|---------|
-| Azure App Service | B2 Linux | Hosts the FastAPI Docker container |
+| Azure App Service | B2 Linux | Hosts the FastAPI Docker container; autoscales 1–3 instances on CPU (scale out >70%, scale in <30%) |
 | Azure Cache for Redis | Basic C1 | URL storage, click counting, rate-limit buckets |
 | Azure Key Vault | Standard | Stores the `api-key` secret |
 | Azure Container Registry | Basic | Stores the Docker image |
