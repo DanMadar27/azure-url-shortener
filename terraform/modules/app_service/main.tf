@@ -49,15 +49,15 @@ resource "azurerm_linux_web_app" "main" {
     }
 
     ip_restriction_default_action = "Deny"
+    vnet_route_all_enabled        = true
   }
 
   app_settings = {
-    REDIS_HOST                             = var.redis_hostname
-    KEY_VAULT_URL                          = var.key_vault_url
-    WEBSITES_PORT                          = "8000"
-    WEBSITE_VNET_ROUTE_ALL                 = "1"
-    APPLICATIONINSIGHTS_CONNECTION_STRING  = var.app_insights_connection_string
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE    = "false"
+    REDIS_HOST                            = var.redis_hostname
+    KEY_VAULT_URL                         = var.key_vault_url
+    WEBSITES_PORT                         = "8000"
+    APPLICATIONINSIGHTS_CONNECTION_STRING = var.app_insights_connection_string
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE   = "false"
   }
 
   virtual_network_subnet_id = var.app_subnet_id

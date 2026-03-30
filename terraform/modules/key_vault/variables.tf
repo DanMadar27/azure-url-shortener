@@ -21,14 +21,3 @@ variable "allowed_ip_cidrs" {
   type        = list(string)
 }
 
-variable "redis_hostname" {
-  description = "Redis hostname stored as a Key Vault secret"
-  type        = string
-  default     = ""
-}
-
-variable "app_service_principal_id" {
-  description = "Principal ID of the App Service managed identity — granted Key Vault Secrets User"
-  type        = string
-  default     = ""
-}

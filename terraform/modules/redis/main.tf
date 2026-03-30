@@ -20,19 +20,3 @@ resource "random_string" "suffix" {
   upper   = false
   special = false
 }
-
-# Redis Cache Contributor — control-plane access for the App Service identity
-resource "azurerm_role_assignment" "redis_contributor" {
-  count                = var.app_service_principal_id != "" ? 1 : 0
-  scope                = azurerm_redis_cache.main.id
-  role_definition_name = "Redis Cache Contributor"
-  principal_id         = var.app_service_principal_id
-}
-
-# Redis Data Owner — data-plane access required for Entra ID authentication
-resource "azurerm_role_assignment" "redis_data_owner" {
-  count                = var.app_service_principal_id != "" ? 1 : 0
-  scope                = azurerm_redis_cache.main.id
-  role_definition_name = "Redis Data Owner"
-  principal_id         = var.app_service_principal_id
-}

@@ -11,8 +11,3 @@ variable "tags" {
   default = {}
 }
 
-variable "redis_resource_id" {
-  description = "Resource ID of the Redis instance — required for private endpoint creation"
-  type        = string
-  default     = ""
-}
