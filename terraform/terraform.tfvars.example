@@ -1,0 +1,4 @@
+allowed_ip_cidrs = ["YOUR_IP/32"]
+alert_email      = "you@example.com"
+owner_object_id  = "YOUR_AAD_OBJECT_ID"
+owner_name       = "your-name"
