@@ -90,8 +90,6 @@ terraform init
 terraform apply
 ```
 
-> **Note:** Terraform state is stored locally for this demo. For production, use an Azure Storage backend with state locking — see the commented-out `backend "azurerm"` block in `providers.tf`.
-
 ### 3. Build and push the Docker image
 
 ```bash
