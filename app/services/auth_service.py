@@ -1,8 +1,8 @@
 import logging
 import os
 
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
+from azure.identity.aio import ManagedIdentityCredential
+from azure.keyvault.secrets.aio import SecretClient
 from fastapi import Header, HTTPException
 
 logger = logging.getLogger(__name__)
@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 _api_key: str | None = None
 
 
-def load_api_key() -> None:
+async def load_api_key() -> None:
     global _api_key
     vault_url = os.environ["KEY_VAULT_URL"]
-    credential = DefaultAzureCredential()
-    client = SecretClient(vault_url=vault_url, credential=credential)
-    _api_key = client.get_secret("api-key").value
+    async with ManagedIdentityCredential() as credential:
+        async with SecretClient(vault_url=vault_url, credential=credential) as client:
+            _api_key = (await client.get_secret("api-key")).value
     logger.info("API key loaded from Key Vault")
 
 

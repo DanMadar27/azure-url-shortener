@@ -18,7 +18,7 @@ app = FastAPI(title="URL Shortener")
 
 @app.on_event("startup")
 async def startup() -> None:
-    auth_service.load_api_key()
+    await auth_service.load_api_key()
     await redis_service.connect()
 
 
